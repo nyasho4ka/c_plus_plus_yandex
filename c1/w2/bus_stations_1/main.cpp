@@ -118,9 +118,8 @@ void StopsForBus(string bus)
     for (auto stop : bus_to_stops[bus])
     {   
         vector<string> buses = stop_to_buses[stop];
-        buses.erase(remove(buses.begin(), buses.end(), bus), buses.end());
         cout << "Stop " << stop << ": ";
-        if (buses.size() == 0)
+        if (buses.size() == 1)
         {
             cout << "no interchange" << endl;
             continue;
