@@ -5,10 +5,7 @@
 using namespace std;
 
 void GetTableSize(ifstream& input, int& rows, int&cols) {
-    input >> rows;
-    input.ignore(1);
-    input >> cols;
-    input.ignore(1);
+    input >> rows >> cols;
 }
 
 void ReadTableRow(ifstream& input, int cols) {
