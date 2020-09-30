@@ -43,11 +43,16 @@ struct StudentList {
             string query;
             int id;
             input >> query >> id;
+            if (id > students.size()){
+                cout << "Bad request" << endl;
+                continue;
+            }
+
             if (query == "date") {
-                GetDateById(id);
+                GetDateById(id-1);
             }
             else if (query == "name") {
-                GetNameById(id);
+                GetNameById(id-1);
             }
             else {
                 cout << "Bad request" << endl;
