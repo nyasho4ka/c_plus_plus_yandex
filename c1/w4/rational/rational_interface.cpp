@@ -1,5 +1,6 @@
 #include <iostream>
 #include <numeric>
+#include <sstream>
 using namespace std;
 
 
@@ -17,6 +18,10 @@ public:
             new_numerator *= -1;
             new_denominator *= -1;
         }
+        SetValues(new_numerator, new_denominator);
+    }
+
+    void SetValues(int new_numerator, int new_denominator) {
         int nod = gcd(new_numerator, new_denominator);
         numerator = new_numerator / nod;
         denominator = new_denominator / nod;
@@ -56,6 +61,23 @@ private:
     // Добавьте поля
     int numerator, denominator;
 };
+
+ostream& operator<<(ostream& stream, const Rational& rational) { 
+    stream << rational.Numerator() << '/' << rational.Denominator();
+    return stream;
+}
+
+istream& operator>>(istream& stream, Rational& rational) {
+    if (stream) {
+        int numerator, denominator;
+        char divider;
+        stream >> numerator >> divider >> denominator;
+        if (stream && divider == '/') {
+            rational = Rational(numerator, denominator);
+        }
+    }
+    return stream;
+}
 
 int main() {
     {
@@ -160,6 +182,69 @@ int main() {
         }
     }
 
+    {
+        ostringstream output;
+        output << Rational(-6, 8);
+        if (output.str() != "-3/4") {
+            cout << "Rational(-6, 8) should be written as \"-3/4\"" << endl;
+            return 1;
+        }
+    }
+
+    {
+        istringstream input("5/7");
+        Rational r;
+        input >> r;
+        bool equal = r == Rational(5, 7);
+        if (!equal) {
+            cout << "5/7 is incorrectly read as " << r << endl;
+            return 2;
+        }
+    }
+
+    {
+        istringstream input("");
+        Rational r;
+        bool correct = !(input >> r);
+        if (!correct) {
+            cout << "Read from empty stream works incorrectly" << endl;
+            return 3;
+        }
+    }
+
+    {
+        istringstream input("5/7 10/8");
+        Rational r1, r2;
+        input >> r1 >> r2;
+        bool correct = r1 == Rational(5, 7) && r2 == Rational(5, 4);
+        if (!correct) {
+            cout << "Multiple values are read incorrectly: " << r1 << " " << r2 << endl;
+            return 4;
+        }
+
+        input >> r1;
+        input >> r2;
+        correct = r1 == Rational(5, 7) && r2 == Rational(5, 4);
+        if (!correct) {
+            cout << "Read from empty stream shouldn't change arguments: " << r1 << " " << r2 << endl;
+            return 5;
+        }
+    }
+
+    {
+        istringstream input1("1*2"), input2("1/"), input3("/4");
+        Rational r1, r2, r3;
+        input1 >> r1;
+        input2 >> r2;
+        input3 >> r3;
+        bool correct = r1 == Rational() && r2 == Rational() && r3 == Rational();
+        if (!correct) {
+            cout << "Reading of incorrectly formatted rationals shouldn't change arguments: "
+                 << r1 << " " << r2 << " " << r3 << endl;
+
+            return 6;
+        }
+    }
     cout << "OK" << endl;
     return 0;
 }
