@@ -1,6 +1,7 @@
 #include <iostream>
 #include <numeric>
 #include <map>
+#include <set>
 #include <vector>
 #include <sstream>
 using namespace std;
@@ -81,7 +82,7 @@ istream& operator>>(istream& stream, Rational& rational) {
     return stream;
 }
 
-bool operator<(const Rational& lhs, const Rational& rhs) {
+bool operator<(Rational& lhs, Rational& rhs) {
     return (lhs - rhs).Numerator() < 0;
 }
 
