@@ -39,6 +39,7 @@ int FindMaxRepetitionCount(const vector<Region>& regions) {
         region_counts[region] += 1;
         max_count = max_count > region_counts[region] ? max_count : region_counts[region];
     }
+    return max_count;
 }
 
 int main() {
