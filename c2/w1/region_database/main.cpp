@@ -30,21 +30,15 @@ bool comp(const pair<string, int>& lhs, const pair<string, int>& rhs) {
 
 int FindMaxRepetitionCount(const vector<Region>& regions) {
     // Составить отображение региона в его количество
+    int max_count = 0;
     map<Region, int> region_counts;
     for (auto region : regions) {
         if (region_counts.count(region) == 0) {
             region_counts[region] = 0;
         }
         region_counts[region] += 1;
+        max_count = max_count > region_counts[region] ? max_count : region_counts[region];
     }
-
-    int max_count = 0;
-    for (auto [region, count] : region_counts) {
-        if (count > max_count) {
-            max_count = count;
-        }
-    }
-    return max_count;
 }
 
 int main() {
