@@ -1,6 +1,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <tuple>
 #include <iostream>
 using namespace std;
 
@@ -33,33 +34,53 @@ public:
         }
         persons.at(person).at(TaskStatus::NEW) += 1;
     }
-    void UpdateTask(TasksInfo& tasksInfo, TaskStatus status) {
-        tasksInfo[status] -= 1;
-        tasksInfo[TaskStatus(int(status) + 1)] += 1;
-    }
-    void PerformPersonTasks(const string& person, int task_count) {
+    tuple<TasksInfo, TasksInfo> PerformPersonTasks(const string& person, int task_count) {
         TasksInfo& person_task_info = persons.at(person);
-        TasksInfo changes;
+        // deal copy to save taskCount unchangeable
+        TasksInfo copy_person_task_info = person_task_info;
+        // TasksInfo to save updatess
+        TasksInfo updates;
+        // calculate updates and parallel change current tasksinfo
         TaskStatus currentStatus = TaskStatus::NEW;
-
-        while(task_count > 0) {
-            if (person_task_info[currentStatus] != 0) {
+        int currentCount = copy_person_task_info[currentStatus];
+        while (task_count > 0) {
+            if (currentCount != 0) {
+                // update current person task info 
                 person_task_info[currentStatus] -= 1;
-
-                changes[currentStatus] -= 1;
-                changes[TaskStatus(int(currentStatus) + 1)] += 1;
-                
+                person_task_info[TaskStatus(int(currentStatus) + 1)] += 1;
+                // updates
+                updates[TaskStatus(int(currentStatus) + 1)] += 1;
+                // counter updating
+                currentCount -= 1;
                 task_count -= 1;
             }
             else {
                 currentStatus = TaskStatus(int(currentStatus) + 1);
+                currentCount = copy_person_task_info[currentStatus];
             }
         }
+        // difference between updated results and updates will give unsolved tasks
+        TasksInfo unchanged;
+        for (auto [taskStatus, taskCount] : person_task_info) {
+            if (updates.count(taskStatus) != 0) {
+                int difference = person_task_info[taskStatus] - updates[taskStatus];
+                if (difference > 0) {
+                    unchanged[taskStatus] = difference;
+                }
+            }
+        }
+        return make_pair(unchanged, updates);
     }
 private:
     map<string, TasksInfo> persons;
 };
 
+ostream& operator<<(ostream& stream, const TasksInfo& tasksInfo) {
+    for (auto [taskStatus, taskCount] : tasksInfo) {
+            stream << "STATUS: " << int(taskStatus) << " COUNT: " << taskCount << endl; 
+        }
+    return stream;
+}
 
 ostream& operator<<(ostream& stream, const TeamTasks& teamTasks) {
     map<string, TasksInfo> persons = teamTasks.GetPersons();
@@ -72,19 +93,24 @@ ostream& operator<<(ostream& stream, const TeamTasks& teamTasks) {
     return stream;
 }
 
-
 int main() {
     map<string, TasksInfo> persons = {
         {"Kravtsov",{
-            {TaskStatus::NEW, 0},
-            {TaskStatus::IN_PROGRESS, 3},
-            {TaskStatus::TESTING, 2},
-            {TaskStatus::DONE, 4},
+            {TaskStatus::NEW, 1},
+            {TaskStatus::IN_PROGRESS, 1},
+            {TaskStatus::TESTING, 1},
+            {TaskStatus::DONE, 0},
         }}
     };
     TeamTasks teamTasks(persons);
-    cout << teamTasks;
-    teamTasks.PerformPersonTasks("Kravtsov", 5);
-    cout << teamTasks;
+    cout << "TASKS AT THE BEGINNING" << endl;
+    cout << teamTasks << endl;
+    cout << "EXECUTE PerformPersonTasks('Kravtsov', 3)" << endl << endl;
+    auto [unchanged, updates] = teamTasks.PerformPersonTasks("Kravtsov", 3);
+    cout << teamTasks << endl;
+    cout << "UNCHANGED TASKS" << endl;
+    cout << unchanged << endl;
+    cout << "UPDATED TASKS" << endl;
+    cout << updates << endl;
     return 0;
 }
